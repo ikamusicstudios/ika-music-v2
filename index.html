@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101010"><title>IKA Music</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#101010;--panel:#191919;--line:#303030;--muted:#aaa;--text:#f5f5f5;--accent:#d9b36c}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Arial}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#242424;color:var(--text);border-radius:10px;padding:10px 14px}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#17130c;font-weight:700}input,select,textarea{width:100%;background:#111;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:11px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 5px}.shell{max-width:1180px;margin:auto;padding:22px 18px 135px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0 22px;border-bottom:1px solid var(--line)}.brand{font-size:22px;letter-spacing:.2em;font-weight:800}.brand span,.eyebrow{color:var(--accent)}.sub{color:var(--muted);font-size:11px;letter-spacing:.12em}.actions{display:flex;gap:8px;align-items:center}.hero{padding:32px 0 18px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:11px}h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:8px 0}.hero p,.muted{color:var(--muted)}.toolbar{display:grid;grid-template-columns:1fr 180px 180px;gap:10px;margin:18px 0}.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:22px}.head{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px}.head h2{font-size:18px;margin:0}.list{border-top:1px solid var(--line)}.song{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}.song.playing{background:#1d1b17}.play{width:36px;height:36px;padding:0;border-radius:50%;color:var(--accent)}.song-title{font-weight:700}.meta{font-size:12px;color:var(--muted)}.song-actions{display:flex;gap:7px;align-items:center}.song-actions button{padding:7px 9px;font-size:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}.card h3{font-size:15px;margin:0 0 8px}.playlist{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}.empty{padding:28px 12px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:12px}.player{position:fixed;bottom:0;left:0;right:0;background:#171717f2;border-top:1px solid var(--line);padding:11px 18px;z-index:5}.player-inner{max-width:1180px;margin:auto;display:grid;grid-template-columns:1fr auto 1fr;gap:15px;align-items:center}.now{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.controls{display:flex;gap:7px;align-items:center;justify-content:center}.controls .main{background:var(--accent);color:#17130c;font-weight:800}.progress{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)}input[type=range]{padding:0;accent-color:var(--accent)}.volume{display:flex;align-items:center;gap:10px;justify-content:flex-end}.volume input{max-width:110px}dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:15px;width:min(470px,calc(100% - 25px));padding:20px}dialog::backdrop{background:#000b}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0;font-size:19px}.formactions{display:flex;gap:8px;margin-top:15px}.notice{padding:10px;background:#292317;color:#e8d2a8;border-radius:9px;font-size:13px;margin:10px 0}.hidden{display:none!important}.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}footer{text-align:center;color:var(--muted);font-size:11px;padding:25px}
+@media(max-width:740px){.layout{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.player-inner{grid-template-columns:1fr auto}.volume{display:none}.shell{padding:14px 13px 145px}.song{grid-template-columns:38px 1fr}.song-actions{grid-column:2}.admin-grid{grid-template-columns:1fr}.wide{grid-column:auto}}
+</style></head><body>
+<div class="shell"><header><div><div class="brand">IKA <span>MUSIC</span></div><div class="sub">MUSIC WITHOUT BORDERS</div></div><div class="actions"><span id="userLabel" class="sub">GUEST</span><button id="accountBtn">Sign in</button><button id="adminBtn" class="hidden">Admin</button></div></header>
+<section class="hero"><div class="eyebrow">Discover music</div><h1>One world. Many sounds.</h1><p>Explore a growing catalogue of music, artists and sounds from around the world.</p></section>
+<div class="toolbar"><input id="search" type="search" placeholder="Search songs, artists, genres or countries…"><select id="genre"><option value="">All genres</option></select><select id="country"><option value="">All countries</option></select></div>
+<div class="layout"><main><div class="head"><h2 id="catalogTitle">All songs</h2><span id="count" class="sub"></span></div><div id="songList" class="list"><div class="empty">Add your Supabase connection details to begin.</div></div></main>
+<aside><div class="card"><h3>Playlists</h3><p class="muted">Public playlists and your personal collections.</p><div id="playlistList"><div class="meta">Loading…</div></div><button id="newPlaylist" class="primary" style="width:100%;margin-top:12px">＋ Create playlist</button></div><div class="card"><h3>About IKA Music</h3><p class="muted">A home for diverse musical cultures, independent artists and sounds without borders.</p></div></aside></div>
+<section id="adminPanel" class="card hidden"><div class="head"><h2>Administration · Add a song</h2><button id="closeAdmin">Close</button></div><div class="notice">For initial testing, enter a reachable MP3 URL. Never put a service-role or secret key in this page.</div><form id="songForm" class="admin-grid">
+<div><label>Song title *</label><input name="title" required></div><div><label>Artist name</label><input name="artist"></div><div><label>Genre</label><input name="genre"></div><div><label>Country</label><input name="country"></div><div><label>Language</label><input name="language"></div><div><label>Duration (seconds)</label><input name="duration_seconds" type="number" min="0"></div><div class="wide"><label>Audio URL (MP3)</label><input name="audio_url" type="url"></div><div class="wide"><label>Cover image URL</label><input name="cover_url" type="url"></div><div class="wide"><label>Lyrics</label><textarea name="lyrics" rows="3"></textarea></div><div class="wide"><label><input name="is_published" type="checkbox" style="width:auto"> Publish immediately</label></div><div class="wide"><button class="primary">Save song</button></div></form></section><footer>IKA MUSIC · MUSIC WITHOUT BORDERS</footer></div>
+<div class="player"><div class="player-inner"><div><div id="nowTitle" class="now">Choose a song</div><div id="nowMeta" class="meta">IKA Music player</div></div><div><div class="controls"><button id="shuffle" title="Shuffle">⇄</button><button id="prev">|◀</button><button id="play" class="main">▶</button><button id="next">▶|</button><button id="repeat" title="Repeat off">↻</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="1000" value="0"><span id="total">0:00</span></div></div><div class="volume"><span class="sub">VOLUME</span><input id="vol" type="range" min="0" max="1" step=".01" value=".85"></div></div></div><audio id="audio" preload="metadata"></audio>
+<dialog id="authDialog"><div class="modalhead"><h2 id="authTitle">Sign in</h2><button type="button" class="close">✕</button></div><form id="authForm"><label>Email</label><input name="email" type="email" required><label>Password</label><input name="password" type="password" required minlength="6"><div class="formactions"><button class="primary">Continue</button><button type="button" id="switchAuth">Create account</button></div></form><p id="authMsg" class="meta"></p></dialog>
+<dialog id="playlistDialog"><div class="modalhead"><h2>Create playlist</h2><button type="button" class="close">✕</button></div><form id="playlistForm"><label>Playlist name</label><input name="title" required maxlength="100"><label>Description</label><textarea name="description" rows="2"></textarea><label><input name="is_public" type="checkbox" style="width:auto"> Make public</label><div class="formactions"><button class="primary">Create</button></div></form><p id="playlistMsg" class="meta"></p></dialog>
+<script>
+(()=>{
+// Replace these two placeholders with Project URL and publishable/anon key from Supabase.
+// NEVER use the service_role / secret key in browser code.
+const SUPABASE_URL="https://xzdfrxoztgcswkposwjy.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_7snTFQV1ufve8dTi3XxdyQ_qmKdppag";
+const $=id=>document.getElementById(id),audio=$("audio");
+let db,user=null,admin=false,songs=[],queue=[],index=-1,shuffle=false,repeat=0,authMode="signin";
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const time=s=>Number.isFinite(s)?`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}`:"0:00";
+function msg(s){alert(s)}
+async function init(){
+ if(SUPABASE_URL.startsWith("YOUR_")||SUPABASE_ANON_KEY.startsWith("YOUR_")){$("songList").innerHTML='<div class="empty">Setup required: add your Supabase Project URL and publishable (anon) key in this file.</div>';return}
+ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+ const {data:{session}}=await db.auth.getSession();user=session?.user||null;
+ await identity();db.auth.onAuthStateChange(async(_e,s)=>{user=s?.user||null;await identity();await catalog();await playlists()});
+ await catalog();await playlists();
+}
+async function identity(){
+ $("userLabel").textContent=user?.email||"GUEST";$("accountBtn").textContent=user?"Sign out":"Sign in";$("newPlaylist").disabled=!user;admin=false;
+ if(user){const {data,error}=await db.rpc("is_admin");admin=!error&&data===true}
+ $("adminBtn").classList.toggle("hidden",!admin);
+}
+async function catalog(){
+ const {data,error}=await db.from("songs").select("id,title,audio_url,cover_url,duration_seconds,genre,country,language,lyrics,is_published,artists(name)").eq("is_published",true).order("created_at",{ascending:false});
+ if(error){$("songList").innerHTML=`<div class="empty">${esc(error.message)}</div>`;return}
+ songs=data||[];filters();filterSongs();
+}
+function filters(){
+ for(const [id,key,label] of [["genre","genre","All genres"],["country","country","All countries"]]){
+ const old=$(id).value,vals=[...new Set(songs.map(s=>s[key]).filter(Boolean))].sort();
+ $(id).innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join("");$(id).value=vals.includes(old)?old:"";
+ }}
+function filterSongs(){
+ const q=$("search").value.toLowerCase(),g=$("genre").value,c=$("country").value;
+ queue=songs.filter(s=>(!q||[s.title,s.artists?.name,s.genre,s.country,s.language].join(" ").toLowerCase().includes(q))&&(!g||s.genre===g)&&(!c||s.country===c));
+ $("catalogTitle").textContent="All songs";render();
+}
+function render(){
+ $("count").textContent=`${queue.length} SONGS`;
+ if(!queue.length){$("songList").innerHTML='<div class="empty">No songs found.</div>';return}
+ $("songList").innerHTML=queue.map((s,i)=>`<div class="song ${queue[index]?.id===s.id?"playing":""}"><button class="play" data-play="${i}">▶</button><div><div class="song-title">${esc(s.title)}</div><div class="meta">${esc(s.artists?.name||"Unknown artist")} · ${esc([s.genre,s.country].filter(Boolean).join(" / "))}</div></div><div class="song-actions">${s.duration_seconds?`<span class="meta">${time(s.duration_seconds)}</span>`:""}<button data-add="${esc(s.id)}">＋ Playlist</button></div></div>`).join("");
+ $("songList").querySelectorAll("[data-play]").forEach(b=>b.onclick=()=>playAt(+b.dataset.play));
+ $("songList").querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addToPlaylist(b.dataset.add));
+}
+async function playAt(i){if(!queue[i])return;index=i;const s=queue[i];if(!s.audio_url){msg("This song has no audio URL yet.");return}audio.src=s.audio_url;$("nowTitle").textContent=s.title;$("nowMeta").textContent=[s.artists?.name,s.genre,s.country].filter(Boolean).join(" · ");try{await audio.play()}catch(e){msg("Playback failed. Check the MP3 URL and its access permissions.")}render()}
+function next(){if(!queue.length)return;if(repeat===2&&index>=0){audio.currentTime=0;audio.play();return}let n=index+1;if(shuffle&&queue.length>1){do{n=Math.floor(Math.random()*queue.length)}while(n===index)}if(n>=queue.length){if(repeat===1)n=0;else{audio.pause();return}}playAt(n)}
+function previous(){if(audio.currentTime>3){audio.currentTime=0;return}if(queue.length)playAt(index<=0?queue.length-1:index-1)}
+async function playlists(){
+ const {data,error}=await db.from("playlists").select("id,title,is_public,owner_id").order("created_at",{ascending:false});
+ if(error){$("playlistList").textContent="Could not load playlists.";return}
+ $("playlistList").innerHTML=(data||[]).map(p=>`<div class="playlist"><span>${esc(p.title)} ${p.is_public?"":"🔒"}</span><button data-listen="${p.id}">Listen</button></div>`).join("")||'<div class="meta">No playlists yet.</div>';
+ $("playlistList").querySelectorAll("[data-listen]").forEach(b=>b.onclick=()=>loadPlaylist(b.dataset.listen));
+}
+async function loadPlaylist(id){
+ const {data,error}=await db.from("playlist_songs").select("position,songs(id,title,audio_url,cover_url,duration_seconds,genre,country,language,is_published,artists(name))").eq("playlist_id",id).order("position");
+ if(error){msg(error.message);return}queue=(data||[]).map(x=>x.songs).filter(Boolean);index=-1;$("catalogTitle").textContent="Selected playlist";render();if(!queue.length)msg("This playlist has no songs yet.");
+}
+async function addToPlaylist(songId){
+ if(!user){msg("Sign in first.");return}
+ const {data,error}=await db.from("playlists").select("id,title").eq("owner_id",user.id);
+ if(error||!data?.length){msg("Create a playlist first.");return}
+ const answer=prompt("Type one of your playlist names:\n"+data.map(p=>p.title).join("\n"));const p=data.find(x=>x.title.toLowerCase()===String(answer||"").toLowerCase());if(!p)return;
+ const {count}=await db.from("playlist_songs").select("*",{count:"exact",head:true}).eq("playlist_id",p.id);
+ const {error:e}=await db.from("playlist_songs").insert({playlist_id:p.id,song_id:songId,position:count||0});if(e)msg(e.message);else msg("Song added.");
+}
+$("search").oninput=filterSongs;$("genre").onchange=filterSongs;$("country").onchange=filterSongs;
+$("play").onclick=()=>{if(!audio.src){if(queue.length)playAt(0)}else if(audio.paused)audio.play();else audio.pause()};
+$("next").onclick=next;$("prev").onclick=previous;$("shuffle").onclick=()=>{shuffle=!shuffle;$("shuffle").style.color=shuffle?"var(--accent)":""};
+$("repeat").onclick=()=>{repeat=(repeat+1)%3;$("repeat").style.color=repeat?"var(--accent)":"";$("repeat").title=["Repeat off","Repeat all","Repeat one"][repeat];$("repeat").textContent=repeat===2?"↻¹":"↻"};
+audio.onended=next;audio.onplay=()=>$("play").textContent="Ⅱ";audio.onpause=()=>$("play").textContent="▶";
+audio.ontimeupdate=()=>{$("elapsed").textContent=time(audio.currentTime);$("total").textContent=time(audio.duration);if(Number.isFinite(audio.duration))$("seek").value=audio.currentTime/audio.duration*1000};
+$("seek").oninput=()=>{if(Number.isFinite(audio.duration))audio.currentTime=+$("seek").value/1000*audio.duration};$("vol").oninput=()=>audio.volume=+$("vol").value;audio.volume=.85;
+$("accountBtn").onclick=async()=>{if(user){const {error}=await db.auth.signOut();if(error)msg(error.message);return}authMode="signin";$("authTitle").textContent="Sign in";$("switchAuth").textContent="Create account";$("authMsg").textContent="";$("authDialog").showModal()};
+$("switchAuth").onclick=()=>{authMode=authMode==="signin"?"signup":"signin";$("authTitle").textContent=authMode==="signin"?"Sign in":"Create account";$("switchAuth").textContent=authMode==="signin"?"Create account":"I already have an account"};
+$("authForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),email=f.get("email"),password=f.get("password");const r=authMode==="signin"?await db.auth.signInWithPassword({email,password}):await db.auth.signUp({email,password});$("authMsg").textContent=r.error?.message||(authMode==="signup"?"Account created. Confirm your email if requested.":"Signed in.");if(!r.error&&authMode==="signin")$("authDialog").close()};
+$("newPlaylist").onclick=()=>{if(!user){msg("Sign in to create a playlist.");return}$("playlistMsg").textContent="";$("playlistDialog").showModal()};
+$("playlistForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const {error}=await db.from("playlists").insert({title:f.get("title"),description:f.get("description")||null,is_public:f.get("is_public")==="on",owner_id:user.id});if(error){$("playlistMsg").textContent=error.message;return}$("playlistDialog").close();e.currentTarget.reset();playlists()};
+document.querySelectorAll(".close").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+$("adminBtn").onclick=()=>$("adminPanel").classList.toggle("hidden");$("closeAdmin").onclick=()=>$("adminPanel").classList.add("hidden");
+$("songForm").onsubmit=async e=>{
+ e.preventDefault();if(!admin){msg("Administrator access required.");return}const f=new FormData(e.currentTarget),artistName=String(f.get("artist")||"").trim();let artist_id=null;
+ if(artistName){let {data:a}=await db.from("artists").select("id").eq("name",artistName).maybeSingle();if(!a){const r=await db.from("artists").insert({name:artistName}).select("id").single();if(r.error){msg(r.error.message);return}a=r.data}artist_id=a.id}
+ const row={title:f.get("title"),artist_id,genre:f.get("genre")||null,country:f.get("country")||null,language:f.get("language")||null,duration_seconds:f.get("duration_seconds")?+f.get("duration_seconds"):null,audio_url:f.get("audio_url")||null,cover_url:f.get("cover_url")||null,lyrics:f.get("lyrics")||null,is_published:f.get("is_published")==="on"};
+ const {error}=await db.from("songs").insert(row);if(error){msg(error.message);return}msg("Song saved.");e.currentTarget.reset();catalog();
+};
+init();
+})();
+</script></body></html>
